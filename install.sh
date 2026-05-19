@@ -11,6 +11,7 @@ BACKUP_DIR="$HOME/.config-backup-$(date +%Y%m%d_%H%M%S)"
 USER_PACKAGE_FILE="${1:-}"
 WALLPAPER_DIR="$DOTFILES_DIR/assets/wallpapers"
 DEFAULT_WALLPAPER="$WALLPAPER_DIR/void-contours.jpg"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/void"
 
 # colors (ironic for a void installer)
 R='\033[38;2;204;68;68m'
@@ -234,6 +235,8 @@ if [[ ! -f "$DOTFILES_DIR/hypr/wallpaper/void.png" ]]; then
 else
     ok "wallpaper found"
 fi
+mkdir -p "$STATE_DIR"
+printf '%s\n' "$DOTFILES_DIR/hypr/wallpaper/void.png" > "$STATE_DIR/current-wallpaper"
 
 # ─────────────────────────────────────────────────────────────
 # PHASE 7: SCREENSHOTS DIRECTORY
@@ -261,7 +264,7 @@ if command -v sddm &>/dev/null; then
         elif [[ -f "$DEFAULT_WALLPAPER" ]]; then
             sudo cp -f "$DEFAULT_WALLPAPER" /usr/share/sddm/themes/void/background.png
         fi
-        printf '[Theme]\nCurrent=void\n\n[General]\nGreeterEnvironment=QT_QPA_PLATFORM=wayland,QT_QPA_PLATFORMTHEME=qt6ct\n' |
+        printf '[Theme]\nCurrent=void\n' |
             sudo tee /etc/sddm.conf.d/10-void-theme.conf > /dev/null
         ok "SDDM void theme installed"
     else

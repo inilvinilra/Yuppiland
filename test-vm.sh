@@ -159,7 +159,7 @@ echo "[4/6] Installing SDDM theme..."
 mkdir -p /usr/share/sddm/themes/void
 cp -r "$DOTFILES/sddm/void/"* /usr/share/sddm/themes/void/
 mkdir -p /etc/sddm.conf.d
-printf '[Theme]\nCurrent=void\n\n[General]\nGreeterEnvironment=QT_QPA_PLATFORM=wayland,QT_QPA_PLATFORMTHEME=qt6ct\n' > /etc/sddm.conf.d/10-void-theme.conf
+printf '[Theme]\nCurrent=void\n' > /etc/sddm.conf.d/10-void-theme.conf
 
 echo "[5/6] Enabling services..."
 systemctl enable sddm

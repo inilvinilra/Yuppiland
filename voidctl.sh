@@ -34,6 +34,7 @@ Usage:
   ./voidctl.sh wallpaper list|current|apply <name|path>
   ./voidctl.sh opacity solid|glass|ghost|focus
   ./voidctl.sh sddm
+  ./voidctl.sh sddm-reset
 
 Commands:
   health    Validate commands, packages, assets, and common config syntax.
@@ -45,6 +46,7 @@ Commands:
   wallpaper List, show, or apply VOID wallpaper assets.
   opacity   Apply a transparency preset to Hyprland, Kitty, Waybar, Rofi, Dunst.
   sddm      Install the VOID SDDM theme with the current wallpaper.
+  sddm-reset Reset SDDM to a safe packaged theme.
 EOF
 }
 
@@ -402,9 +404,23 @@ install_sddm() {
     if wallpaper="$(current_wallpaper_path)"; then
         sudo cp -f "$wallpaper" /usr/share/sddm/themes/void/background.png
     fi
-    printf '[Theme]\nCurrent=void\n\n[General]\nGreeterEnvironment=QT_QPA_PLATFORM=wayland,QT_QPA_PLATFORMTHEME=qt6ct\n' |
+    printf '[Theme]\nCurrent=void\n' |
         sudo tee /etc/sddm.conf.d/10-void-theme.conf >/dev/null
     ok "SDDM theme installed"
+}
+
+reset_sddm() {
+    sudo mkdir -p /etc/sddm.conf.d
+    if [[ -d /usr/share/sddm/themes/breeze ]]; then
+        printf '[Theme]\nCurrent=breeze\n' | sudo tee /etc/sddm.conf.d/10-void-theme.conf >/dev/null
+        ok "SDDM reset to breeze"
+    elif [[ -d /usr/share/sddm/themes/elarun ]]; then
+        printf '[Theme]\nCurrent=elarun\n' | sudo tee /etc/sddm.conf.d/10-void-theme.conf >/dev/null
+        ok "SDDM reset to elarun"
+    else
+        sudo rm -f /etc/sddm.conf.d/10-void-theme.conf
+        ok "VOID SDDM override removed"
+    fi
 }
 
 link_firefox_chrome() {
@@ -449,6 +465,7 @@ case "${1:-}" in
     wallpaper) shift; wallpaper_command "$@" ;;
     opacity) apply_opacity "${2:-}" ;;
     sddm) install_sddm ;;
+    sddm-reset) reset_sddm ;;
     -h|--help|help|"") usage ;;
     *) die "unknown command: $1" ;;
 esac
