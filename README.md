@@ -1,4 +1,5 @@
 # VOID
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/cb6e7394-c670-4a2c-b605-110dff6dfa23" />
 
 > pure black monochrome Arch Linux + Hyprland desktop suite
 
