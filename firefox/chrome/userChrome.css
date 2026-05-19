@@ -1,0 +1,202 @@
+/* ╔══════════════════════════════════════════════════════════════╗
+ * ║  VOID — Firefox userChrome.css                              ║
+ * ║  Copy to: ~/.mozilla/firefox/<profile>/chrome/               ║
+ * ║  Enable: about:config → toolkit.legacyUserProfileCustomizations.stylesheets = true
+ * ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ─── VOID PALETTE ─── */
+:root {
+    --void-bg:       #000000;
+    --void-surface:  #080808;
+    --void-overlay:  #1a1a1a;
+    --void-muted:    #2a2a2a;
+    --void-subtle:   #555555;
+    --void-subtext:  #888888;
+    --void-text:     #cccccc;
+    --void-bright:   #e8e8e8;
+    --void-white:    #ffffff;
+    --void-red:      #cc4444;
+}
+
+/* ─── GLOBAL OVERRIDES ─── */
+:root {
+    --toolbar-bgcolor: var(--void-bg) !important;
+    --toolbar-color: var(--void-text) !important;
+    --toolbar-field-background-color: var(--void-surface) !important;
+    --toolbar-field-color: var(--void-text) !important;
+    --toolbar-field-border-color: var(--void-overlay) !important;
+    --toolbar-field-focus-background-color: var(--void-surface) !important;
+    --toolbar-field-focus-border-color: var(--void-subtle) !important;
+    --toolbar-field-focus-color: var(--void-bright) !important;
+    --lwt-toolbar-field-highlight: var(--void-overlay) !important;
+    --lwt-toolbar-field-highlight-text: var(--void-bright) !important;
+
+    --tab-min-height: 30px !important;
+    --toolbarbutton-border-radius: 4px !important;
+
+    --arrowpanel-background: var(--void-surface) !important;
+    --arrowpanel-color: var(--void-text) !important;
+    --arrowpanel-border-color: var(--void-overlay) !important;
+
+    --autocomplete-popup-background: var(--void-surface) !important;
+    --autocomplete-popup-color: var(--void-text) !important;
+    --autocomplete-popup-highlight-background: var(--void-overlay) !important;
+    --autocomplete-popup-highlight-color: var(--void-bright) !important;
+
+    --urlbar-box-bgcolor: var(--void-surface) !important;
+    --urlbar-box-hover-bgcolor: var(--void-overlay) !important;
+    --urlbar-box-active-bgcolor: var(--void-overlay) !important;
+    --urlbar-box-text-color: var(--void-text) !important;
+
+    --sidebar-background-color: var(--void-bg) !important;
+    --sidebar-text-color: var(--void-text) !important;
+    --sidebar-border-color: var(--void-overlay) !important;
+}
+
+/* ─── TAB BAR ─── */
+#TabsToolbar {
+    background: var(--void-bg) !important;
+}
+
+.tabbrowser-tab {
+    font-family: "JetBrains Mono Nerd Font", monospace !important;
+    font-size: 11px !important;
+}
+
+/* active tab */
+.tabbrowser-tab[selected="true"] .tab-background {
+    background: var(--void-overlay) !important;
+    border: none !important;
+    border-radius: 4px 4px 0 0 !important;
+}
+
+.tabbrowser-tab[selected="true"] .tab-label {
+    color: var(--void-bright) !important;
+}
+
+/* inactive tabs */
+.tabbrowser-tab:not([selected="true"]) .tab-background {
+    background: transparent !important;
+}
+
+.tabbrowser-tab:not([selected="true"]) .tab-label {
+    color: var(--void-subtle) !important;
+}
+
+.tabbrowser-tab:not([selected="true"]):hover .tab-background {
+    background: var(--void-surface) !important;
+}
+
+.tabbrowser-tab:not([selected="true"]):hover .tab-label {
+    color: var(--void-subtext) !important;
+}
+
+/* tab close button — subtle until hover */
+.tab-close-button {
+    opacity: 0 !important;
+}
+
+.tabbrowser-tab:hover .tab-close-button {
+    opacity: 0.6 !important;
+}
+
+/* tab separator lines */
+.tabbrowser-tab::after,
+.tabbrowser-tab::before {
+    border: none !important;
+}
+
+/* ─── NAVIGATION BAR ─── */
+#nav-bar {
+    background: var(--void-bg) !important;
+    border-bottom: 1px solid var(--void-overlay) !important;
+    padding: 2px 4px !important;
+}
+
+/* url bar */
+#urlbar-background {
+    background: var(--void-surface) !important;
+    border: 1px solid var(--void-overlay) !important;
+    border-radius: 4px !important;
+}
+
+#urlbar[focused="true"] > #urlbar-background {
+    border-color: var(--void-subtle) !important;
+}
+
+#urlbar-input {
+    font-family: "JetBrains Mono Nerd Font", monospace !important;
+    font-size: 12px !important;
+    color: var(--void-text) !important;
+}
+
+/* ─── TOOLBAR BUTTONS ─── */
+#back-button,
+#forward-button,
+#reload-button,
+#stop-button,
+#downloads-button,
+#unified-extensions-button,
+#PanelUI-menu-button {
+    fill: var(--void-subtext) !important;
+    color: var(--void-subtext) !important;
+}
+
+#back-button:hover,
+#forward-button:hover,
+#reload-button:hover,
+#stop-button:hover,
+#downloads-button:hover,
+#unified-extensions-button:hover,
+#PanelUI-menu-button:hover {
+    fill: var(--void-text) !important;
+    color: var(--void-text) !important;
+}
+
+/* ─── BOOKMARKS BAR ─── */
+#PersonalToolbar {
+    background: var(--void-bg) !important;
+    border-bottom: 1px solid var(--void-overlay) !important;
+    padding: 2px 0 !important;
+}
+
+#PersonalToolbar .bookmark-item {
+    color: var(--void-subtext) !important;
+    font-family: "JetBrains Mono Nerd Font", monospace !important;
+    font-size: 11px !important;
+}
+
+#PersonalToolbar .bookmark-item:hover {
+    color: var(--void-text) !important;
+    background: var(--void-overlay) !important;
+}
+
+/* ─── FINDBAR ─── */
+.findbar-container {
+    background: var(--void-surface) !important;
+    border-top: 1px solid var(--void-overlay) !important;
+    color: var(--void-text) !important;
+}
+
+/* ─── CONTEXT MENUS ─── */
+menupopup {
+    --panel-background: var(--void-surface) !important;
+    --panel-color: var(--void-text) !important;
+    --panel-border-color: var(--void-overlay) !important;
+}
+
+menuitem:hover,
+menu:hover {
+    background-color: var(--void-overlay) !important;
+    color: var(--void-bright) !important;
+}
+
+menuseparator {
+    border-color: var(--void-overlay) !important;
+}
+
+/* ─── SCROLLBAR ─── */
+* {
+    scrollbar-color: var(--void-muted) transparent !important;
+    scrollbar-width: thin !important;
+}

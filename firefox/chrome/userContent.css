@@ -1,0 +1,86 @@
+/* ╔══════════════════════════════════════════════════════════════╗
+ * ║  VOID — Firefox userContent.css                             ║
+ * ║  Styles for web content pages (new tab, about:, etc.)        ║
+ * ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ─── VOID PALETTE ─── */
+:root {
+    --void-bg:       #000000;
+    --void-surface:  #080808;
+    --void-overlay:  #1a1a1a;
+    --void-muted:    #2a2a2a;
+    --void-subtle:   #555555;
+    --void-subtext:  #888888;
+    --void-text:     #cccccc;
+    --void-bright:   #e8e8e8;
+}
+
+/* ─── NEW TAB / HOME PAGE ─── */
+@-moz-document url("about:home"), url("about:newtab"), url("about:privatebrowsing") {
+    body, #root {
+        background-color: var(--void-bg) !important;
+    }
+
+    /* hide pocket, sponsored, top sites if desired */
+    .top-site-outer,
+    .ds-card,
+    section[data-section-id="topstories"],
+    section[data-section-id="topsites"] {
+        display: none !important;
+    }
+
+    /* search box */
+    .search-wrapper input {
+        background-color: var(--void-surface) !important;
+        border: 1px solid var(--void-overlay) !important;
+        border-radius: 4px !important;
+        color: var(--void-text) !important;
+        font-family: "JetBrains Mono Nerd Font", monospace !important;
+    }
+
+    .search-wrapper input:focus {
+        border-color: var(--void-subtle) !important;
+    }
+
+    .search-wrapper input::placeholder {
+        color: var(--void-subtle) !important;
+    }
+
+    /* logo — dim it */
+    .logo-and-wordmark .logo {
+        opacity: 0.15 !important;
+    }
+}
+
+/* ─── ABOUT PAGES ─── */
+@-moz-document url-prefix("about:") {
+    :root {
+        --in-content-page-background: var(--void-bg) !important;
+        --in-content-page-color: var(--void-text) !important;
+        --in-content-box-background: var(--void-surface) !important;
+        --in-content-box-border-color: var(--void-overlay) !important;
+        --in-content-primary-button-background: var(--void-overlay) !important;
+        --in-content-primary-button-text-color: var(--void-bright) !important;
+        --in-content-primary-button-background-hover: var(--void-muted) !important;
+        --in-content-button-background: var(--void-surface) !important;
+        --in-content-button-text-color: var(--void-text) !important;
+        --in-content-button-background-hover: var(--void-overlay) !important;
+        --in-content-link-color: var(--void-subtext) !important;
+        --in-content-link-color-hover: var(--void-text) !important;
+    }
+}
+
+/* ─── SCROLLBAR (all pages) ─── */
+@-moz-document url-prefix("http://"), url-prefix("https://"), url-prefix("about:") {
+    * {
+        scrollbar-color: var(--void-muted) transparent !important;
+        scrollbar-width: thin !important;
+    }
+}
+
+/* ─── PDF VIEWER ─── */
+@-moz-document url-prefix("about:reader"), url("about:blank") {
+    body {
+        background-color: var(--void-bg) !important;
+    }
+}

@@ -1,0 +1,12 @@
+# VM test environment
+.vm/
+.preview-runtime/
+
+# images (keep in repo if needed, but don't track large ones)
+*.qcow2
+
+# editor
+*.swp
+*.swo
+*~
+

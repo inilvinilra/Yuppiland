@@ -1,0 +1,152 @@
+/* ╔══════════════════════════════════════════════════════════════╗
+ * ║  VOID — Rofi Theme                                           ║
+ * ║  ~/.config/rofi/themes/void.rasi                              ║
+ * ╚══════════════════════════════════════════════════════════════╝ */
+
+* {
+    bg:         #000000b3;
+    bg-solid:   #080808;
+    border-col: #1a1a1a;
+    muted:      #2a2a2a;
+    subtle:     #555555;
+    fg:         #cccccc;
+    bright:     #e8e8e8;
+    sel-bg:     #1a1a1a;
+    sel-fg:     #e8e8e8;
+    urgent:     #cc4444;
+
+    font: "JetBrains Mono Nerd Font 11";
+
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+window {
+    width:            420px;
+    background-color: @bg;
+    border:           1px solid;
+    border-color:     @border-col;
+    border-radius:    5px;
+    padding:          0;
+    location:         center;
+    anchor:           center;
+}
+
+mainbox {
+    background-color: transparent;
+    children:         [ inputbar, listview, message ];
+    spacing:          0;
+    padding:          0;
+}
+
+/* ─── INPUT BAR ─── */
+inputbar {
+    background-color: @bg-solid;
+    border:           0 0 1px 0;
+    border-color:     @border-col;
+    padding:          10px 14px;
+    spacing:          8px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color:       @subtle;
+    font:             "JetBrains Mono Nerd Font 11";
+}
+
+entry {
+    text-color:       @fg;
+    placeholder:      "search...";
+    placeholder-color: @subtle;
+    cursor:           text;
+}
+
+/* ─── LIST VIEW ─── */
+listview {
+    background-color: transparent;
+    columns:          1;
+    lines:            8;
+    spacing:          0;
+    padding:          4px 0;
+    scrollbar:        false;
+    fixed-height:     true;
+    dynamic:          true;
+    cycle:            true;
+}
+
+element {
+    padding:          8px 14px;
+    spacing:          10px;
+    background-color: transparent;
+    text-color:       @fg;
+    cursor:           pointer;
+    border-radius:    0;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element normal.urgent {
+    background-color: transparent;
+    text-color:       @urgent;
+}
+
+element normal.active {
+    background-color: transparent;
+    text-color:       @bright;
+}
+
+element selected.normal {
+    background-color: @sel-bg;
+    text-color:       @sel-fg;
+}
+
+element selected.urgent {
+    background-color: @sel-bg;
+    text-color:       @urgent;
+}
+
+element selected.active {
+    background-color: @sel-bg;
+    text-color:       @bright;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element-icon {
+    size:             18px;
+    cursor:           inherit;
+    background-color: transparent;
+}
+
+element-text {
+    cursor:           inherit;
+    highlight:        bold;
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+}
+
+/* ─── MESSAGE ─── */
+message {
+    background-color: transparent;
+    border:           1px 0 0 0;
+    border-color:     @border-col;
+    padding:          8px 14px;
+}
+
+textbox {
+    background-color: transparent;
+    text-color:       @subtle;
+    font:             "JetBrains Mono Nerd Font 10";
+}
+
+/* ─── SCROLLBAR (hidden) ─── */
+scrollbar {
+    width:            0;
+}

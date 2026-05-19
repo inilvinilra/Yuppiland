@@ -1,0 +1,206 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  VOID — Bash Configuration                                   ║
+# ║  Source this from ~/.bashrc                                   ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# --- EARLY EXIT IF NOT INTERACTIVE ---
+[[ $- != *i* ]] && return
+
+# --- HISTORY ---
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth:erasedups
+HISTIGNORE="ls:cd:pwd:exit:clear:history"
+shopt -s histappend
+
+# --- SHELL OPTIONS ---
+shopt -s checkwinsize
+shopt -s globstar 2>/dev/null
+shopt -s nocaseglob
+shopt -s cdspell
+shopt -s autocd 2>/dev/null
+shopt -s dirspell 2>/dev/null
+
+# --- PATH ---
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+# --- ENVIRONMENT ---
+export EDITOR="nvim"
+export VISUAL="nvim"
+export TERMINAL="kitty"
+export BROWSER="brave"
+export FILE_MANAGER="thunar"
+export PAGER="less"
+export LESS="-R --mouse"
+export MANPAGER="less -R --use-color -Dd+r -Du+w"
+
+# --- XDG ---
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+# ─────────────────────────────────────────────────────────────
+# PROMPT
+# ─────────────────────────────────────────────────────────────
+
+_void_git_branch() {
+    local branch
+    branch=$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match HEAD 2>/dev/null)
+    if [[ -n "$branch" ]]; then
+        local dirty=""
+        [[ -n $(git status --porcelain 2>/dev/null) ]] && dirty="*"
+        echo -e " \033[38;2;136;136;136m‹${branch}${dirty}›\033[0m"
+    fi
+}
+
+_void_exit_code() {
+    local code=$?
+    [[ $code -ne 0 ]] && echo -e "\033[38;2;204;68;68m[$code] \033[0m"
+}
+
+# minimal void prompt
+# user@host ~/path ‹branch*›
+# ❯
+PROMPT_COMMAND='_EXIT=$?'
+PS1='\[\033[38;2;136;136;136m\]\u\[\033[38;2;42;42;42m\]@\[\033[38;2;136;136;136m\]\h \[\033[38;2;136;136;136m\]\w$(_void_git_branch)\n'
+PS1+='$([ $_EXIT -ne 0 ] && echo "\[\033[38;2;204;68;68m\]" || echo "\[\033[38;2;136;136;136m\]")❯\[\033[0m\] '
+
+# ─────────────────────────────────────────────────────────────
+# ALIASES
+# ─────────────────────────────────────────────────────────────
+
+# --- NAVIGATION ---
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# --- LS (use eza if available) ---
+if command -v eza &>/dev/null; then
+    alias ls='eza --icons --group-directories-first'
+    alias ll='eza -la --icons --group-directories-first --git'
+    alias lt='eza --tree --level=2 --icons --group-directories-first'
+    alias la='eza -a --icons --group-directories-first'
+else
+    alias ls='ls --color=auto --group-directories-first'
+    alias ll='ls -la --color=auto'
+    alias la='ls -a --color=auto'
+fi
+
+# --- SAFETY ---
+alias rm='rm -iv'
+alias cp='cp -iv'
+alias mv='mv -iv'
+alias mkdir='mkdir -pv'
+
+# --- GIT ---
+alias g='git'
+alias gs='git status -sb'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git log --oneline --graph -20'
+alias gd='git diff'
+alias gco='git checkout'
+alias gb='git branch'
+alias gpl='git pull'
+
+# --- SYSTEM ---
+alias update='sudo pacman -Syu'
+alias install='sudo pacman -S'
+alias remove='sudo pacman -Rns'
+alias search='pacman -Ss'
+alias orphans='pacman -Qtdq | sudo pacman -Rns -'
+alias mirrors='sudo reflector --country Australia --latest 10 --sort rate --save /etc/pacman.d/mirrorlist'
+
+# --- HYPRLAND ---
+alias hrc='hyprctl reload'
+alias hcl='hyprctl clients'
+alias hmon='hyprctl monitors'
+alias hkw='hyprctl keywords'
+
+# --- WAYBAR ---
+alias waybar-restart='pkill waybar && waybar &'
+
+# --- MISC ---
+alias cls='clear'
+alias grep='grep --color=auto'
+alias df='df -h'
+alias du='du -sh'
+alias free='free -h'
+alias ip='ip -c'
+alias cat='bat --style=plain --paging=never 2>/dev/null || command cat'
+alias fetch='fastfetch'
+alias fm='thunar'
+alias web='brave'
+alias cow='cowsay'
+
+# ─────────────────────────────────────────────────────────────
+# FUNCTIONS
+# ─────────────────────────────────────────────────────────────
+
+# create dir and cd into it
+mkcd() { mkdir -p "$1" && cd "$1"; }
+
+# extract any archive
+extract() {
+    if [[ -f "$1" ]]; then
+        case "$1" in
+            *.tar.bz2) tar xjf "$1"    ;;
+            *.tar.gz)  tar xzf "$1"    ;;
+            *.tar.xz)  tar xJf "$1"    ;;
+            *.bz2)     bunzip2 "$1"    ;;
+            *.rar)     unrar x "$1"    ;;
+            *.gz)      gunzip "$1"     ;;
+            *.tar)     tar xf "$1"     ;;
+            *.tbz2)    tar xjf "$1"    ;;
+            *.tgz)     tar xzf "$1"    ;;
+            *.zip)     unzip "$1"      ;;
+            *.Z)       uncompress "$1" ;;
+            *.7z)      7z x "$1"       ;;
+            *.zst)     unzstd "$1"     ;;
+            *)         echo "'$1' cannot be extracted" ;;
+        esac
+    else
+        echo "'$1' is not a valid file"
+    fi
+}
+
+# quick system info
+sysinfo() {
+    echo -e "\033[38;2;136;136;136m── system ──────────────────\033[0m"
+    uname -srm
+    uptime -p
+    free -h | awk '/^Mem:/ {print "mem: "$3" / "$2}'
+    df -h / | awk 'NR==2 {print "disk: "$3" / "$2" ("$5")"}'
+    echo -e "\033[38;2;136;136;136m───────────────────────────\033[0m"
+}
+
+# ─────────────────────────────────────────────────────────────
+# COMPLETIONS
+# ─────────────────────────────────────────────────────────────
+
+# bash completion
+[[ -r /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
+
+# fzf integration
+[[ -f /usr/share/fzf/key-bindings.bash ]] && source /usr/share/fzf/key-bindings.bash
+[[ -f /usr/share/fzf/completion.bash ]] && source /usr/share/fzf/completion.bash
+
+export FZF_DEFAULT_OPTS="
+    --color=bg+:#1a1a1a,bg:#000000,spinner:#555555,hl:#888888
+    --color=fg:#cccccc,header:#555555,info:#555555,pointer:#cccccc
+    --color=marker:#cccccc,fg+:#e8e8e8,prompt:#888888,hl+:#cccccc
+    --border=rounded --border-label-pos=3
+    --preview-window=border-rounded
+"
+
+# ─────────────────────────────────────────────────────────────
+# STARTUP
+# ─────────────────────────────────────────────────────────────
+
+# run fastfetch on first interactive terminal
+if [[ -z "$VOID_FETCHED" ]] && command -v fastfetch &>/dev/null; then
+    fastfetch
+    export VOID_FETCHED=1
+fi

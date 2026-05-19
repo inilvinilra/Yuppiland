@@ -1,0 +1,19 @@
+/* ╔══════════════════════════════════════════════════════════════╗
+ * ║  VOID — Waybar Color Variables                               ║
+ * ║  ~/.config/waybar/colors.css                                  ║
+ * ╚══════════════════════════════════════════════════════════════╝ */
+
+@define-color bg       #000000;
+@define-color surface  #080808;
+@define-color overlay  #1a1a1a;
+@define-color muted    #2a2a2a;
+@define-color subtle   #555555;
+@define-color subtext  #888888;
+@define-color text     #cccccc;
+@define-color bright   #e8e8e8;
+@define-color white    #ffffff;
+
+/* status colors — used only where meaningful */
+@define-color red      #cc4444;
+@define-color yellow   #c8a84b;
+@define-color green    #5a8a5a;

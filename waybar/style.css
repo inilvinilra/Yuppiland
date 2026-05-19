@@ -1,0 +1,243 @@
+/* ╔══════════════════════════════════════════════════════════════╗
+ * ║  VOID — Waybar Stylesheet                                    ║
+ * ║  ~/.config/waybar/style.css                                   ║
+ * ╚══════════════════════════════════════════════════════════════╝ */
+
+@import "colors.css";
+
+/* ─── GLOBAL ─── */
+* {
+    font-family: "JetBrains Mono Nerd Font", monospace;
+    font-size: 11px;
+    font-weight: 400;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+}
+
+window#waybar {
+    background-color: alpha(@bg, 0.72);
+    border-bottom: 1px solid @overlay;
+    color: @text;
+    transition-property: background-color;
+    transition-duration: 0.3s;
+}
+
+window#waybar.hidden {
+    opacity: 0.0;
+}
+
+/* ─── TOOLTIP ─── */
+tooltip {
+    background-color: alpha(@surface, 0.94);
+    border: 1px solid @overlay;
+    border-radius: 5px;
+    color: @text;
+}
+
+tooltip label {
+    color: @text;
+    font-size: 11px;
+}
+
+/* ─── WORKSPACES ─── */
+#workspaces {
+    margin-left: 8px;
+}
+
+#workspaces button {
+    padding: 0 6px;
+    color: @subtle;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-size: 10px;
+    min-width: 16px;
+    transition: all 0.2s ease;
+}
+
+#workspaces button:hover {
+    color: @subtext;
+    background: transparent;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+#workspaces button.active {
+    color: @bright;
+}
+
+#workspaces button.urgent {
+    color: @red;
+}
+
+#workspaces button.empty {
+    color: @muted;
+}
+
+/* ─── WINDOW TITLE ─── */
+#window {
+    margin-left: 12px;
+    color: @subtext;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+window#waybar.empty #window {
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+}
+
+/* ─── CLOCK ─── */
+#clock {
+    color: @text;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+/* ─── MODULES (right side) ─── */
+#pulseaudio,
+#network,
+#battery,
+#backlight,
+#idle_inhibitor,
+#custom-mic,
+#custom-updates,
+#tray,
+#custom-power {
+    padding: 0 8px;
+    color: @subtext;
+    font-size: 11px;
+    transition: color 0.2s ease;
+}
+
+#pulseaudio:hover,
+#network:hover,
+#battery:hover,
+#backlight:hover,
+#idle_inhibitor:hover,
+#custom-mic:hover,
+#custom-updates:hover,
+#custom-power:hover {
+    color: @text;
+}
+
+/* ─── SEPARATOR ─── */
+#custom-separator {
+    color: @muted;
+    padding: 0 2px;
+    font-size: 10px;
+}
+
+/* ─── PULSEAUDIO ─── */
+#pulseaudio.muted {
+    color: @subtle;
+}
+
+/* ─── NETWORK ─── */
+#network.disconnected {
+    color: @subtle;
+}
+
+/* ─── BATTERY ─── */
+#battery.charging,
+#battery.plugged,
+#battery.full {
+    color: @green;
+}
+
+#battery.warning:not(.charging) {
+    color: @yellow;
+}
+
+#battery.critical:not(.charging) {
+    color: @red;
+    animation: blink 1.2s linear infinite;
+}
+
+@keyframes blink {
+    to {
+        color: @subtle;
+    }
+}
+
+/* ─── TRAY ─── */
+#tray {
+    margin-right: 4px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+}
+
+/* ─── MEDIA PLAYER ─── */
+#custom-media {
+    padding: 0 10px;
+    color: @subtext;
+    font-size: 11px;
+    font-style: italic;
+}
+
+#custom-media.Playing {
+    color: @text;
+    font-style: normal;
+}
+
+#custom-media.Paused {
+    color: @subtle;
+}
+
+#custom-media.stopped {
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* ─── IDLE INHIBITOR ─── */
+#idle_inhibitor.activated {
+    color: @text;
+}
+
+#idle_inhibitor.deactivated {
+    color: @subtle;
+}
+
+/* ─── BACKLIGHT ─── */
+#backlight {
+    color: @subtext;
+}
+
+/* ─── MIC ─── */
+#custom-mic.muted {
+    color: @subtle;
+}
+
+#custom-mic.active {
+    color: @subtext;
+}
+
+/* ─── UPDATES ─── */
+#custom-updates.pending {
+    color: @text;
+}
+
+#custom-updates.current {
+    color: @subtle;
+}
+
+/* ─── POWER BUTTON ─── */
+#custom-power {
+    margin-right: 8px;
+    color: @subtle;
+    font-size: 13px;
+}
+
+#custom-power:hover {
+    color: @red;
+}
