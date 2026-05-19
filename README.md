@@ -1,6 +1,6 @@
 # VOID
 
-> pure black monochrome Arch Linux + Hyprland rice
+> pure black monochrome Arch Linux + Hyprland desktop suite
 
 ```
   ██╗   ██╗ ██████╗ ██╗██████╗
@@ -29,7 +29,8 @@
 | Shell | bash | `bash/.bashrc_void` |
 | Screenshots | grim + slurp | `hypr/scripts/screenshot.sh` |
 | Clipboard | cliphist + wl-clipboard | — |
-| CPU | auto-cpufreq | `system/auto-cpufreq.conf` |
+| CPU | auto-cpufreq (optional) | `system/auto-cpufreq.conf` |
+| Control | voidctl | `voidctl.sh` |
 
 ## Palette
 
@@ -49,10 +50,16 @@ Status only: `#cc4444` red · `#c8a84b` yellow · `#5a8a5a` green
 ## Install
 
 ```bash
-git clone https://github.com/YOUR_USER/void-dotfiles.git ~/Desktop/Yuppiland
+git clone https://github.com/inilvinilra/Yuppiland.git ~/Desktop/Yuppiland
 cd ~/Desktop/Yuppiland
 chmod +x install.sh
 ./install.sh
+```
+
+Optional extra packages can be installed alongside VOID:
+
+```bash
+./install.sh pkg_user.lst
 ```
 
 The installer will:
@@ -62,6 +69,26 @@ The installer will:
 4. Source `.bashrc_void` from `~/.bashrc`
 5. Set script permissions
 6. Create wallpaper and screenshot directories
+
+## VOID Control
+
+```bash
+./voidctl.sh health
+./voidctl.sh sync
+./voidctl.sh opacity glass
+./voidctl.sh sddm
+```
+
+Opacity presets:
+
+| Preset | Feel |
+|--------|------|
+| `solid` | readable, mostly opaque |
+| `glass` | balanced transparency |
+| `ghost` | very transparent |
+| `focus` | focused window readable, inactive windows airy |
+
+HyDE parity work is tracked in `ROADMAP.md`.
 
 ## Keybindings
 
@@ -181,6 +208,8 @@ The installer will:
 │       └── index.theme     # cursor theme
 ├── system/
 │   └── auto-cpufreq.conf   # CPU governor
+├── voidctl.sh              # health, sync, opacity, SDDM helper
+├── ROADMAP.md              # HyDE parity and VOID direction
 ├── install.sh              # automated installer
 └── README.md
 ```

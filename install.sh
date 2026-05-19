@@ -8,6 +8,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 BACKUP_DIR="$HOME/.config-backup-$(date +%Y%m%d_%H%M%S)"
+USER_PACKAGE_FILE="${1:-}"
 
 # colors (ironic for a void installer)
 R='\033[38;2;204;68;68m'
@@ -41,7 +42,7 @@ PACKAGES=(
     # core WM
     hyprland hyprpaper hypridle hyprlock xdg-desktop-portal-hyprland
     # bar & launcher
-    waybar rofi-wayland
+    waybar rofi
     # terminal
     kitty
     # audio
@@ -49,26 +50,37 @@ PACKAGES=(
     # notifications
     dunst libnotify
     # file manager & browser
-    dolphin firefox
+    thunar tumbler thunar-archive-plugin file-roller gvfs ffmpegthumbnailer dolphin firefox
     # screenshots & clipboard
     grim slurp wl-clipboard cliphist
     # fetch & visualizer
-    fastfetch cava
+    fastfetch cava pacman-contrib
     # fonts & themes
-    ttf-jetbrains-mono-nerd papirus-icon-theme bibata-cursor-theme
+    ttf-jetbrains-mono-nerd papirus-icon-theme adwaita-cursors
     # networking & bluetooth
     networkmanager bluez bluez-utils
     # utilities
-    brightnessctl playerctl jq polkit-kde-agent
+    brightnessctl playerctl jq polkit-kde-agent qt6ct network-manager-applet
     # shell tools
     eza bat fzf
     # display manager
     sddm qt5-quickcontrols2
-    # power management
-    auto-cpufreq
     # fun
     cowsay
 )
+
+if [[ -n "$USER_PACKAGE_FILE" ]]; then
+    if [[ ! -f "$USER_PACKAGE_FILE" ]]; then
+        warn "package file not found: $USER_PACKAGE_FILE"
+    else
+        while IFS= read -r pkg; do
+            pkg="${pkg%%#*}"
+            pkg="${pkg//[[:space:]]/}"
+            [[ -n "$pkg" ]] && PACKAGES+=("$pkg")
+        done < "$USER_PACKAGE_FILE"
+        ok "loaded user package list: $USER_PACKAGE_FILE"
+    fi
+fi
 
 missing=()
 for pkg in "${PACKAGES[@]}"; do
@@ -111,6 +123,7 @@ DIRS_TO_LINK=(
     "dunst"
     "gtk-3.0"
     "gtk-4.0"
+    "qt6ct"
 )
 
 needs_backup=false
@@ -160,6 +173,7 @@ link_config "fastfetch"    "fastfetch"
 link_config "dunst"        "dunst"
 link_config "gtk-3.0"      "gtk-3.0"
 link_config "gtk-4.0"      "gtk-4.0"
+link_config "qt6ct"        "qt6ct"
 # cursor theme goes to ~/.icons (XDG spec), not ~/.config/icons
 mkdir -p "$HOME/.icons"
 ln -sfn "$DOTFILES_DIR/icons/default" "$HOME/.icons/default"
@@ -194,6 +208,7 @@ header "setting permissions"
 
 chmod +x "$DOTFILES_DIR/hypr/scripts/"*.sh
 chmod +x "$DOTFILES_DIR/waybar/scripts/"*.sh
+chmod +x "$DOTFILES_DIR/voidctl.sh"
 ok "scripts marked executable"
 
 # ─────────────────────────────────────────────────────────────
@@ -236,9 +251,14 @@ if command -v sddm &>/dev/null; then
     if [[ "$sddm_answer" =~ ^[Yy]$ ]]; then
         sudo mkdir -p /usr/share/sddm/themes/void
         sudo cp -r "$DOTFILES_DIR/sddm/void/"* /usr/share/sddm/themes/void/
-        # set theme in sddm config
         sudo mkdir -p /etc/sddm.conf.d
-        echo -e "[Theme]\nCurrent=void" | sudo tee /etc/sddm.conf.d/void.conf > /dev/null
+        if [[ -f "$DOTFILES_DIR/image copy.png" ]]; then
+            sudo cp -f "$DOTFILES_DIR/image copy.png" /usr/share/sddm/themes/void/background.png
+        elif [[ -f "$DOTFILES_DIR/image.png" ]]; then
+            sudo cp -f "$DOTFILES_DIR/image.png" /usr/share/sddm/themes/void/background.png
+        fi
+        printf '[Theme]\nCurrent=void\n\n[General]\nGreeterEnvironment=QT_QPA_PLATFORM=wayland,QT_QPA_PLATFORMTHEME=qt6ct\n' |
+            sudo tee /etc/sddm.conf.d/10-void-theme.conf > /dev/null
         ok "SDDM void theme installed"
     else
         info "skipping SDDM theme"

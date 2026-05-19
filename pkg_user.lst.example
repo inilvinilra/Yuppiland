@@ -1,0 +1,7 @@
+# Optional user packages for install.sh.
+# Copy to pkg_user.lst, edit, then run: ./install.sh pkg_user.lst
+
+brave-bin
+ungoogled-chromium-bin
+zen-browser-bin
+visual-studio-code-bin
