@@ -72,9 +72,9 @@
 
 [urgency_low]
     background = "#080808"
-    foreground = "#888888"
+    foreground = "#cccccc"
     frame_color = "#1a1a1a"
-    highlight = "#555555"
+    highlight = "#cccccc"
     timeout = 4
     default_icon = dialog-information
 
@@ -89,9 +89,9 @@
 
 [urgency_critical]
     background = "#080808"
-    foreground = "#cc4444"
-    frame_color = "#cc4444"
-    highlight = "#cc4444"
+    foreground = "#cccccc"
+    frame_color = "#1a1a1a"
+    highlight = "#cccccc"
     timeout = 0
     default_icon = dialog-warning
     override_pause_level = 60

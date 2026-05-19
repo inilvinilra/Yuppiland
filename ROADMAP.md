@@ -5,7 +5,7 @@ VOID aims to become a focused Hyprland desktop suite: darker, lighter, and more 
 ## Near Term
 
 - Make the installer fully first-run safe on EndeavourOS and clean Arch.
-- Add a real theme switcher for palette, opacity, wallpaper, Waybar, Rofi, Kitty, GTK, Qt, SDDM, and fastfetch.
+- Expand the theme switcher across GTK, Qt, SDDM, fastfetch, and browser chrome.
 - Add opacity presets: solid, glass, ghost, and focus.
 - Add a wallpaper selector that regenerates matching accent colors.
 - Add a launcher selector for drun, run, clipboard, emoji, power, screenshot, audio, Wi-Fi, and Bluetooth menus.

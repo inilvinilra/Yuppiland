@@ -76,18 +76,23 @@ The installer will:
 ```bash
 ./voidctl.sh health
 ./voidctl.sh sync
+./voidctl.sh theme list
+./voidctl.sh theme apply void-glass
 ./voidctl.sh opacity glass
 ./voidctl.sh sddm
 ```
 
-Opacity presets:
+Theme packs:
 
-| Preset | Feel |
-|--------|------|
-| `solid` | readable, mostly opaque |
-| `glass` | balanced transparency |
-| `ghost` | very transparent |
-| `focus` | focused window readable, inactive windows airy |
+| Theme | Feel |
+|-------|------|
+| `void-solid` | readable, mostly opaque |
+| `void-glass` | balanced transparency |
+| `void-ghost` | very transparent |
+| `void-focus` | focused window readable, inactive windows airy |
+
+Opacity aliases map to theme packs:
+`solid`, `glass`, `ghost`, `focus`.
 
 HyDE parity work is tracked in `ROADMAP.md`.
 

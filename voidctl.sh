@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
+THEME_DIR="$ROOT_DIR/themes"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/void"
+STATE_FILE="$STATE_DIR/current-theme"
 
 R='\033[38;2;204;68;68m'
 G='\033[38;2;136;136;136m'
@@ -22,12 +25,14 @@ VOID control
 Usage:
   ./voidctl.sh health
   ./voidctl.sh sync
+  ./voidctl.sh theme list|current|apply <name>
   ./voidctl.sh opacity solid|glass|ghost|focus
   ./voidctl.sh sddm
 
 Commands:
   health    Validate commands, packages, assets, and common config syntax.
   sync      Copy current repo configs into ~/.config and reload live services.
+  theme     List, show, or apply VOID theme packs.
   opacity   Apply a transparency preset to Hyprland, Kitty, Waybar, Rofi, Dunst.
   sddm      Install the VOID SDDM theme with the current wallpaper.
 EOF
@@ -93,42 +98,140 @@ replace_value() {
     perl -0pi -e "s/${pattern}/${replacement}/g" "$file"
 }
 
+theme_conf() {
+    local theme="$1"
+    local conf="$THEME_DIR/$theme/theme.conf"
+    [[ -f "$conf" ]] || die "theme not found: $theme"
+    printf '%s\n' "$conf"
+}
+
+load_theme() {
+    local conf="$1"
+    local key value
+    while IFS='=' read -r key value; do
+        [[ -z "$key" || "$key" == \#* ]] && continue
+        key="${key//[^a-zA-Z0-9_]/}"
+        printf -v "$key" '%s' "$value"
+    done < "$conf"
+}
+
+set_waybar_colors() {
+    local file="$ROOT_DIR/waybar/colors.css"
+
+    replace_value "$file" '@define-color bg +#[0-9a-fA-F]{6};' "@define-color bg       $bg;"
+    replace_value "$file" '@define-color surface +#[0-9a-fA-F]{6};' "@define-color surface  $surface;"
+    replace_value "$file" '@define-color overlay +#[0-9a-fA-F]{6};' "@define-color overlay  $overlay;"
+    replace_value "$file" '@define-color muted +#[0-9a-fA-F]{6};' "@define-color muted    $muted;"
+    replace_value "$file" '@define-color subtle +#[0-9a-fA-F]{6};' "@define-color subtle   $subtle;"
+    replace_value "$file" '@define-color subtext +#[0-9a-fA-F]{6};' "@define-color subtext  $subtext;"
+    replace_value "$file" '@define-color text +#[0-9a-fA-F]{6};' "@define-color text     $text;"
+    replace_value "$file" '@define-color bright +#[0-9a-fA-F]{6};' "@define-color bright   $bright;"
+    replace_value "$file" '@define-color white +#[0-9a-fA-F]{6};' "@define-color white    $white;"
+    replace_value "$file" '@define-color red +#[0-9a-fA-F]{6};' "@define-color red      $red;"
+    replace_value "$file" '@define-color yellow +#[0-9a-fA-F]{6};' "@define-color yellow   $yellow;"
+    replace_value "$file" '@define-color green +#[0-9a-fA-F]{6};' "@define-color green    $green;"
+}
+
+apply_theme_values() {
+    local conf="$1"
+    load_theme "$conf"
+
+    set_waybar_colors
+
+    replace_value "$ROOT_DIR/kitty/kitty.conf" '^background_opacity +[0-9.]+' "background_opacity      $kitty_opacity"
+    replace_value "$ROOT_DIR/kitty/kitty.conf" '^foreground +#[0-9a-fA-F]{6}' "foreground              $text"
+    replace_value "$ROOT_DIR/kitty/kitty.conf" '^background +#[0-9a-fA-F]{6}' "background              $bg"
+    replace_value "$ROOT_DIR/kitty/kitty.conf" '^selection_background +#[0-9a-fA-F]{6}' "selection_background     $text"
+
+    replace_value "$ROOT_DIR/waybar/style.css" 'background-color: alpha\(@bg, [0-9.]+\);' "background-color: alpha(@bg, $waybar_opacity);"
+    replace_value "$ROOT_DIR/waybar/style.css" 'background-color: alpha\(@surface, [0-9.]+\);' "background-color: alpha(@surface, $tooltip_opacity);"
+
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'bg: +#[0-9a-fA-F]{8};' "bg:         ${bg}${rofi_alpha};"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'bg-solid: +#[0-9a-fA-F]{6};' "bg-solid:   $surface;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'border-col: +#[0-9a-fA-F]{6};' "border-col: $overlay;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'muted: +#[0-9a-fA-F]{6};' "muted:      $muted;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'subtle: +#[0-9a-fA-F]{6};' "subtle:     $subtle;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'fg: +#[0-9a-fA-F]{6};' "fg:         $text;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'bright: +#[0-9a-fA-F]{6};' "bright:     $bright;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'sel-bg: +#[0-9a-fA-F]{6};' "sel-bg:     $overlay;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'sel-fg: +#[0-9a-fA-F]{6};' "sel-fg:     $bright;"
+    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'urgent: +#[0-9a-fA-F]{6};' "urgent:     $red;"
+
+    replace_value "$ROOT_DIR/dunst/dunstrc" 'transparency = [0-9]+' "transparency = $dunst_transparency"
+    replace_value "$ROOT_DIR/dunst/dunstrc" 'background = "#[0-9a-fA-F]{6}"' "background = \"$surface\""
+    replace_value "$ROOT_DIR/dunst/dunstrc" 'foreground = "#[0-9a-fA-F]{6}"' "foreground = \"$text\""
+    replace_value "$ROOT_DIR/dunst/dunstrc" 'frame_color = "#[0-9a-fA-F]{6}"' "frame_color = \"$overlay\""
+    replace_value "$ROOT_DIR/dunst/dunstrc" 'highlight = "#[0-9a-fA-F]{6}"' "highlight = \"$text\""
+
+    replace_value "$ROOT_DIR/hypr/hyprland.conf" 'size = [0-9]+\\n        passes = [0-9]+' "size = $blur_size\\n        passes = $blur_passes"
+    replace_value "$ROOT_DIR/hypr/hyprland.conf" 'dim_strength = [0-9.]+' "dim_strength = $dim_strength"
+    replace_value "$ROOT_DIR/hypr/hyprland.conf" 'opacity 0\.[0-9]+ 0\.[0-9]+ 1\.0' "opacity $window_active $window_inactive 1.0"
+    replace_value "$ROOT_DIR/hypr/hyprland.conf" 'match:class (Codex|antigravity|cursor|VSCodium), opacity 0\.[0-9]+ 0\.[0-9]+ 1\.0' "match:class \\1, opacity $editor_active $editor_inactive 1.0"
+
+    if [[ -n "${wallpaper:-}" && -f "$ROOT_DIR/$wallpaper" ]]; then
+        mkdir -p "$ROOT_DIR/hypr/wallpaper"
+        cp -f "$ROOT_DIR/$wallpaper" "$ROOT_DIR/hypr/wallpaper/void.png"
+    fi
+}
+
+theme_list() {
+    local theme conf name desc
+    shopt -s nullglob
+    for conf in "$THEME_DIR"/*/theme.conf; do
+        theme="$(basename "$(dirname "$conf")")"
+        name=""
+        desc=""
+        while IFS='=' read -r key value; do
+            case "$key" in
+                name) name="$value" ;;
+                description) desc="$value" ;;
+            esac
+        done < "$conf"
+        printf '%-14s %s%s\n' "$theme" "${name:-$theme}" "${desc:+ - $desc}"
+    done
+}
+
+theme_current() {
+    if [[ -f "$STATE_FILE" ]]; then
+        cat "$STATE_FILE"
+    else
+        echo "unknown"
+    fi
+}
+
+theme_apply() {
+    local theme="$1"
+    local conf
+    conf="$(theme_conf "$theme")"
+    apply_theme_values "$conf"
+    mkdir -p "$STATE_DIR"
+    printf '%s\n' "$theme" > "$STATE_FILE"
+    sync_configs
+    ok "theme applied: $theme"
+}
+
+theme_command() {
+    local action="${1:-}"
+    case "$action" in
+        list) theme_list ;;
+        current) theme_current ;;
+        apply) [[ -n "${2:-}" ]] || die "missing theme name"; theme_apply "$2" ;;
+        *) die "usage: ./voidctl.sh theme list|current|apply <name>" ;;
+    esac
+}
+
 apply_opacity() {
     local profile="${1:-}"
-    local kitty waybar rofi dunst active inactive codex_active codex_inactive
 
     case "$profile" in
-        solid)
-            kitty="0.94"; waybar="0.88"; rofi="cc"; dunst="10"
-            active="0.94"; inactive="0.88"; codex_active="0.96"; codex_inactive="0.90"
-            ;;
-        glass)
-            kitty="0.78"; waybar="0.60"; rofi="99"; dunst="26"
-            active="0.82"; inactive="0.68"; codex_active="0.88"; codex_inactive="0.78"
-            ;;
-        ghost)
-            kitty="0.68"; waybar="0.48"; rofi="80"; dunst="34"
-            active="0.74"; inactive="0.56"; codex_active="0.82"; codex_inactive="0.68"
-            ;;
-        focus)
-            kitty="0.82"; waybar="0.64"; rofi="aa"; dunst="22"
-            active="0.88"; inactive="0.58"; codex_active="0.92"; codex_inactive="0.70"
-            ;;
-        *)
-            die "unknown opacity profile: ${profile:-missing}"
-            ;;
+        solid) theme_apply void-solid; return ;;
+        glass) theme_apply void-glass; return ;;
+        ghost) theme_apply void-ghost; return ;;
+        focus) theme_apply void-focus; return ;;
+        *) die "unknown opacity profile: ${profile:-missing}" ;;
     esac
 
-    replace_value "$ROOT_DIR/kitty/kitty.conf" '^background_opacity +[0-9.]+' "background_opacity      $kitty"
-    replace_value "$ROOT_DIR/waybar/style.css" 'background-color: alpha\(@bg, [0-9.]+\);' "background-color: alpha(@bg, $waybar);"
-    replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'bg: +#[0-9a-fA-F]{8};' "bg:         #000000$rofi;"
-    replace_value "$ROOT_DIR/dunst/dunstrc" 'transparency = [0-9]+' "transparency = $dunst"
-
-    replace_value "$ROOT_DIR/hypr/hyprland.conf" 'opacity 0\.[0-9]+ 0\.[0-9]+ 1\.0' "opacity $active $inactive 1.0"
-    replace_value "$ROOT_DIR/hypr/hyprland.conf" 'match:class (Codex|antigravity|cursor|VSCodium), opacity 0\.[0-9]+ 0\.[0-9]+ 1\.0' "match:class \\1, opacity $codex_active $codex_inactive 1.0"
-
-    sync_configs
-    ok "opacity profile applied: $profile"
+    die "unknown opacity profile: ${profile:-missing}"
 }
 
 health() {
@@ -196,6 +299,7 @@ install_sddm() {
 case "${1:-}" in
     health) health ;;
     sync) sync_configs ;;
+    theme) shift; theme_command "$@" ;;
     opacity) apply_opacity "${2:-}" ;;
     sddm) install_sddm ;;
     -h|--help|help|"") usage ;;
