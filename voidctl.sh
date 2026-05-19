@@ -271,6 +271,7 @@ wallpaper_current() {
 
 wallpaper_apply() {
     local input="$1"
+    local do_sync="${2:-sync}"
     local src=""
 
     if [[ -f "$input" ]]; then
@@ -289,7 +290,7 @@ wallpaper_apply() {
     cp -f "$src" "$ROOT_DIR/hypr/wallpaper/void.png"
     printf '%s\n' "$src" > "$WALLPAPER_STATE_FILE"
 
-    if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && have hyprctl; then
+    if [[ "$do_sync" == "sync" && -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && have hyprctl; then
         sync_configs
     fi
 
@@ -431,7 +432,7 @@ apply_suite() {
     local theme="${1:-void-glass}"
     local wallpaper="${2:-void-contours.jpg}"
 
-    wallpaper_apply "$wallpaper"
+    wallpaper_apply "$wallpaper" "nosync"
     theme_apply "$theme"
     ok "VOID suite applied: theme=$theme wallpaper=$wallpaper"
     info "Optional: ./voidctl.sh sddm"
