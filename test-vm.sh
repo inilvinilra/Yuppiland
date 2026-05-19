@@ -138,6 +138,7 @@ cp -r "$DOTFILES/fastfetch" "$CONFIG/"
 cp -r "$DOTFILES/dunst" "$CONFIG/"
 cp -r "$DOTFILES/gtk-3.0" "$CONFIG/"
 cp -r "$DOTFILES/gtk-4.0" "$CONFIG/"
+cp -r "$DOTFILES/qt6ct" "$CONFIG/" 2>/dev/null || true
 mkdir -p "$CONFIG/nvim/colors"
 cp "$DOTFILES/nvim/colors/void.lua" "$CONFIG/nvim/colors/"
 
@@ -158,7 +159,7 @@ echo "[4/6] Installing SDDM theme..."
 mkdir -p /usr/share/sddm/themes/void
 cp -r "$DOTFILES/sddm/void/"* /usr/share/sddm/themes/void/
 mkdir -p /etc/sddm.conf.d
-echo -e "[Theme]\nCurrent=void" > /etc/sddm.conf.d/void.conf
+printf '[Theme]\nCurrent=void\n\n[General]\nGreeterEnvironment=QT_QPA_PLATFORM=wayland,QT_QPA_PLATFORMTHEME=qt6ct\n' > /etc/sddm.conf.d/10-void-theme.conf
 
 echo "[5/6] Enabling services..."
 systemctl enable sddm
@@ -166,14 +167,20 @@ systemctl enable NetworkManager
 
 echo "[6/6] Creating wallpaper..."
 mkdir -p "$CONFIG/hypr/wallpaper"
-# pure black 1920x1080 PPM → PNG fallback
-if command -v convert &>/dev/null; then
+if [[ -f "$DOTFILES/assets/wallpapers/void-contours.jpg" ]]; then
+    cp -f "$DOTFILES/assets/wallpapers/void-contours.jpg" "$CONFIG/hypr/wallpaper/void.png"
+    cp -f "$DOTFILES/assets/wallpapers/void-contours.jpg" /usr/share/sddm/themes/void/background.png
+elif [[ -f "$DOTFILES/hypr/wallpaper/void.png" ]]; then
+    cp -f "$DOTFILES/hypr/wallpaper/void.png" "$CONFIG/hypr/wallpaper/void.png"
+    cp -f "$DOTFILES/hypr/wallpaper/void.png" /usr/share/sddm/themes/void/background.png
+elif command -v convert &>/dev/null; then
     convert -size 1920x1080 xc:#000000 "$CONFIG/hypr/wallpaper/void.png"
+    cp -f "$CONFIG/hypr/wallpaper/void.png" /usr/share/sddm/themes/void/background.png
 else
-    # create minimal black PNG manually
     printf 'P6\n1920 1080\n255\n' > /tmp/black.ppm
     dd if=/dev/zero bs=3 count=$((1920*1080)) >> /tmp/black.ppm 2>/dev/null
     cp /tmp/black.ppm "$CONFIG/hypr/wallpaper/void.png"
+    cp /tmp/black.ppm /usr/share/sddm/themes/void/background.png
 fi
 chown -R void:void /home/void/
 
@@ -185,6 +192,76 @@ echo "  Login: void / void"
 echo "══════════════════════════════════════"
 SETUP_EOF
     chmod +x "$VM_DIR/void-setup.sh"
+
+    cat > "$VM_DIR/install-arch.sh" << 'ARCH_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+DISK="${1:-/dev/vda}"
+HOSTNAME="void-vm"
+
+echo "══════════════════════════════════════"
+echo "  VOID — Automated Arch VM Install"
+echo "══════════════════════════════════════"
+echo "Target disk: $DISK"
+echo ""
+read -rp "This will erase $DISK. Continue? [y/N] " answer
+[[ "$answer" =~ ^[Yy]$ ]] || exit 1
+
+timedatectl set-ntp true || true
+pacman -Sy --noconfirm archlinux-keyring
+
+sgdisk --zap-all "$DISK"
+sgdisk -n 1:0:+2M -t 1:ef02 -c 1:BIOS "$DISK"
+sgdisk -n 2:0:0 -t 2:8300 -c 2:ROOT "$DISK"
+partprobe "$DISK"
+sleep 2
+
+ROOT="${DISK}2"
+if [[ "$DISK" == *nvme* ]]; then
+    ROOT="${DISK}p2"
+fi
+
+mkfs.ext4 -F "$ROOT"
+
+mount "$ROOT" /mnt
+
+pacstrap -K /mnt \
+    base linux linux-firmware sudo networkmanager grub \
+    qemu-guest-agent git bash
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+arch-chroot /mnt /bin/bash << CHROOT_EOF
+set -euo pipefail
+ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+hwclock --systohc
+sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
+locale-gen
+echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+echo '$HOSTNAME' > /etc/hostname
+cat > /etc/hosts << HOSTS_EOF
+127.0.0.1 localhost
+::1 localhost
+127.0.1.1 $HOSTNAME.localdomain $HOSTNAME
+HOSTS_EOF
+systemctl enable NetworkManager
+systemctl enable qemu-guest-agent
+grub-install --target=i386-pc $DISK
+grub-mkconfig -o /boot/grub/grub.cfg
+CHROOT_EOF
+
+mkdir -p /mnt/mnt/dotfiles
+mount -t 9p -o trans=virtio,version=9p2000.L dotfiles /mnt/mnt/dotfiles
+arch-chroot /mnt /bin/bash /mnt/dotfiles/.vm/void-setup.sh
+
+echo ""
+echo "══════════════════════════════════════"
+echo "  Install complete. Reboot the VM."
+echo "  Login: void / void"
+echo "══════════════════════════════════════"
+ARCH_EOF
+    chmod +x "$VM_DIR/install-arch.sh"
     ok "setup script created"
 }
 
@@ -254,9 +331,10 @@ usage() {
     echo -e "${D}  workflow:${N}"
     echo -e "${D}    1. ./test-vm.sh setup${N}"
     echo -e "${D}    2. ./test-vm.sh install${N}"
-    echo -e "${D}       → inside VM: partition disk, pacstrap, arch-chroot${N}"
-    echo -e "${D}       → run: mount -t 9p -o trans=virtio dotfiles /mnt/dotfiles${N}"
-    echo -e "${D}       → run: bash /mnt/dotfiles/.vm/void-setup.sh${N}"
+    echo -e "${D}       → inside ISO run:${N}"
+    echo -e "${D}         mkdir -p /mnt/dotfiles${N}"
+    echo -e "${D}         mount -t 9p -o trans=virtio,version=9p2000.L dotfiles /mnt/dotfiles${N}"
+    echo -e "${D}         bash /mnt/dotfiles/.vm/install-arch.sh${N}"
     echo -e "${D}    3. ./test-vm.sh run${N}"
     echo ""
 }

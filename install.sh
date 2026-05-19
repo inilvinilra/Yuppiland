@@ -9,6 +9,8 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 BACKUP_DIR="$HOME/.config-backup-$(date +%Y%m%d_%H%M%S)"
 USER_PACKAGE_FILE="${1:-}"
+WALLPAPER_DIR="$DOTFILES_DIR/assets/wallpapers"
+DEFAULT_WALLPAPER="$WALLPAPER_DIR/void-contours.jpg"
 
 # colors (ironic for a void installer)
 R='\033[38;2;204;68;68m'
@@ -219,13 +221,15 @@ header "wallpaper setup"
 
 mkdir -p "$DOTFILES_DIR/hypr/wallpaper"
 if [[ ! -f "$DOTFILES_DIR/hypr/wallpaper/void.png" ]]; then
-    warn "place your wallpaper at: $DOTFILES_DIR/hypr/wallpaper/void.png"
-    info "creating a pure black fallback wallpaper..."
-    if command -v convert &>/dev/null; then
+    if [[ -f "$DEFAULT_WALLPAPER" ]]; then
+        cp -f "$DEFAULT_WALLPAPER" "$DOTFILES_DIR/hypr/wallpaper/void.png"
+        ok "default wallpaper installed"
+    elif command -v convert &>/dev/null; then
+        warn "no wallpaper asset found — creating a pure black fallback"
         convert -size 1920x1080 xc:#000000 "$DOTFILES_DIR/hypr/wallpaper/void.png"
-        ok "created 1920x1080 black wallpaper"
+        ok "created fallback wallpaper"
     else
-        warn "install imagemagick to auto-generate fallback wallpaper"
+        warn "no wallpaper asset found and imagemagick is missing"
     fi
 else
     ok "wallpaper found"
@@ -252,10 +256,10 @@ if command -v sddm &>/dev/null; then
         sudo mkdir -p /usr/share/sddm/themes/void
         sudo cp -r "$DOTFILES_DIR/sddm/void/"* /usr/share/sddm/themes/void/
         sudo mkdir -p /etc/sddm.conf.d
-        if [[ -f "$DOTFILES_DIR/image copy.png" ]]; then
-            sudo cp -f "$DOTFILES_DIR/image copy.png" /usr/share/sddm/themes/void/background.png
-        elif [[ -f "$DOTFILES_DIR/image.png" ]]; then
-            sudo cp -f "$DOTFILES_DIR/image.png" /usr/share/sddm/themes/void/background.png
+        if [[ -f "$DOTFILES_DIR/hypr/wallpaper/void.png" ]]; then
+            sudo cp -f "$DOTFILES_DIR/hypr/wallpaper/void.png" /usr/share/sddm/themes/void/background.png
+        elif [[ -f "$DEFAULT_WALLPAPER" ]]; then
+            sudo cp -f "$DEFAULT_WALLPAPER" /usr/share/sddm/themes/void/background.png
         fi
         printf '[Theme]\nCurrent=void\n\n[General]\nGreeterEnvironment=QT_QPA_PLATFORM=wayland,QT_QPA_PLATFORMTHEME=qt6ct\n' |
             sudo tee /etc/sddm.conf.d/10-void-theme.conf > /dev/null
@@ -302,9 +306,9 @@ echo -e "${W}  VOID installed successfully${N}"
 echo -e "${D}  ──────────────────────────────────${N}"
 echo ""
 echo -e "${D}  next steps:${N}"
-echo -e "${D}    1. place wallpaper at hypr/wallpaper/void.png${N}"
-echo -e "${D}    2. log out and select Hyprland session${N}"
-echo -e "${D}    3. or reload with: hyprctl reload${N}"
-echo -e "${D}    4. nvim: set colorscheme void in your init.lua${N}"
+echo -e "${D}    1. run: ./voidctl.sh health${N}"
+echo -e "${D}    2. choose wallpaper: ./voidctl.sh wallpaper list${N}"
+echo -e "${D}    3. apply theme: ./voidctl.sh theme apply void-glass${N}"
+echo -e "${D}    4. log out and select Hyprland session${N}"
 echo -e "${D}    5. firefox: enable toolkit.legacyUserProfileCustomizations.stylesheets${N}"
 echo ""

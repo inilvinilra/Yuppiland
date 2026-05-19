@@ -1,7 +1,7 @@
-# VOID
+# Yuppiland VOID
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/cb6e7394-c670-4a2c-b605-110dff6dfa23" />
 
-> pure black monochrome Arch Linux + Hyprland desktop suite
+> HyDE-inspired, pure black monochrome Arch Linux + Hyprland desktop suite.
 
 ```
   ██╗   ██╗ ██████╗ ██╗██████╗
@@ -32,6 +32,7 @@
 | Clipboard | cliphist + wl-clipboard | — |
 | CPU | auto-cpufreq (optional) | `system/auto-cpufreq.conf` |
 | Control | voidctl | `voidctl.sh` |
+| Optional VM Preview | QEMU/KVM | `test-vm.sh` |
 
 ## Palette
 
@@ -50,11 +51,13 @@ Status only: `#cc4444` red · `#c8a84b` yellow · `#5a8a5a` green
 
 ## Install
 
+### Host-first install
+
 ```bash
 git clone https://github.com/inilvinilra/Yuppiland.git ~/Desktop/Yuppiland
 cd ~/Desktop/Yuppiland
-chmod +x install.sh
-./install.sh
+chmod +x install.sh voidctl.sh
+./voidctl.sh install
 ```
 
 Optional extra packages can be installed alongside VOID:
@@ -69,15 +72,43 @@ The installer will:
 3. Symlink all configs to `~/.config/`
 4. Source `.bashrc_void` from `~/.bashrc`
 5. Set script permissions
-6. Create wallpaper and screenshot directories
+6. Install the default wallpaper from `assets/wallpapers`
+7. Optionally install the SDDM login theme
+8. Link Firefox chrome files if a profile exists
+
+### Host live workflow
+
+Use this while developing directly on your main system:
+
+```bash
+./voidctl.sh health
+./voidctl.sh apply void-glass void-contours.jpg
+./voidctl.sh sddm
+./voidctl.sh firefox
+```
+
+### Optional VM preview
+
+QEMU/KVM preview is still available, but it is not the primary path:
+
+```bash
+./test-vm.sh setup
+./test-vm.sh install
+./test-vm.sh run
+```
+
+This is useful for destructive testing only.
 
 ## VOID Control
 
 ```bash
 ./voidctl.sh health
+./voidctl.sh apply void-glass void-contours.jpg
 ./voidctl.sh sync
 ./voidctl.sh theme list
 ./voidctl.sh theme apply void-glass
+./voidctl.sh wallpaper list
+./voidctl.sh wallpaper apply void-contours.jpg
 ./voidctl.sh opacity glass
 ./voidctl.sh sddm
 ```
@@ -95,6 +126,13 @@ Opacity aliases map to theme packs:
 `solid`, `glass`, `ghost`, `focus`.
 
 HyDE parity work is tracked in `ROADMAP.md`.
+
+Wallpaper assets are stored in `assets/wallpapers/` and are used by:
+
+- **Hyprpaper**: `hypr/wallpaper/void.png`
+- **Hyprlock**: lock screen background pipeline
+- **SDDM**: copied to `/usr/share/sddm/themes/void/background.png`
+- **QEMU VM**: installed into the test user desktop automatically
 
 ## Keybindings
 
