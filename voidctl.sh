@@ -119,7 +119,7 @@ apply_opacity() {
             ;;
     esac
 
-    replace_value "$ROOT_DIR/kitty/kitty.conf" 'background_opacity +[0-9.]+' "background_opacity      $kitty"
+    replace_value "$ROOT_DIR/kitty/kitty.conf" '^background_opacity +[0-9.]+' "background_opacity      $kitty"
     replace_value "$ROOT_DIR/waybar/style.css" 'background-color: alpha\(@bg, [0-9.]+\);' "background-color: alpha(@bg, $waybar);"
     replace_value "$ROOT_DIR/rofi/themes/void.rasi" 'bg: +#[0-9a-fA-F]{8};' "bg:         #000000$rofi;"
     replace_value "$ROOT_DIR/dunst/dunstrc" 'transparency = [0-9]+' "transparency = $dunst"
