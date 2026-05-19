@@ -14,7 +14,7 @@
     notification_limit = 5
 
     # --- APPEARANCE ---
-    transparency = 18
+    transparency = 26
     padding = 12
     horizontal_padding = 14
     text_icon_padding = 14

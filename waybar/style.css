@@ -16,7 +16,7 @@
 }
 
 window#waybar {
-    background-color: alpha(@bg, 0.72);
+    background-color: alpha(@bg, 0.60);
     border-bottom: 1px solid @overlay;
     color: @text;
     transition-property: background-color;
@@ -29,7 +29,7 @@ window#waybar.hidden {
 
 /* ─── TOOLTIP ─── */
 tooltip {
-    background-color: alpha(@surface, 0.94);
+    background-color: alpha(@surface, 0.88);
     border: 1px solid @overlay;
     border-radius: 5px;
     color: @text;
